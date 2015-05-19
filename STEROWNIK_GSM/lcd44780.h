@@ -87,7 +87,7 @@
 #define USE_LCD_STR_E 	0			// wysy³a string umieszczony w pamiêci FLASH
 
 #define USE_LCD_INT 	1			// wyœwietla liczbê dziesietn¹ na LCD
-#define USE_LCD_HEX 	0			// wyœwietla liczbê szesnastkow¹ na LCD
+#define USE_LCD_HEX 	1			// wyœwietla liczbê szesnastkow¹ na LCD
 
 #define USE_LCD_DEFCHAR		1		// wysy³a zdefiniowany znak z pamiêci RAM
 #define USE_LCD_DEFCHAR_P 	0		// wysy³a zdefiniowany znak z pamiêci FLASH
