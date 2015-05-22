@@ -80,14 +80,40 @@ char ow_read_bit(void)	//odczyt 1 bitu
 
 
  void temperatura (void)
- {
+ {	
+
 	 unsigned char ulamek=0; 
+	 
 	 obecnosc=ow_reset; // sprawdzenie obecnosci wyswietlacza
 	 if(obecnosc==1) // gdy jest wykryty czujnik
 	 {
-			lcd_locate(0,0); //w adresie 0.0 wyswietlacza wyswietla ponizszy komunikat
-			lcd_str("Jest czujnik");
+     ow_write_bajt(0x44); //uruchomienie konwersji temperatury
+	 PULLUP=1;  //tryb parasite 
+	 _delay_us(800); //konwersja
+	 ow_reset;
+	 PULLUP=0;
+	 tempH=0x00;
+	 tempL=0x00;
+	 ow_write_bajt(0xCC); //pomijamy ROM
+	 ow_write_bajt(0xbe); //odczyt temperatury
+	 tempL=ow_read_bajt(); // w naszym przypadku zawsze 0x00 
+	 tempH=ow_read_bajt();
+	 temperatura=tempH<<1;
+	
+	 lcd_locate(0,0); //w adresie 0.0 wyswietlacza wyswietla ponizszy komunikat
+	 
+	 lcd_str("temperatura");
+ 
+	 if((tempH&(0x01)) == 1)
+	 lcd_str(".5");
+	 else
+	 lcd_str(".0");
+
+	 ow_reset();
+	 tempL=0x00;
+	 tempH=0x00;
 	 }
+
 	 else //nie ma czujnika
 	 {
 			lcd_locate(0,0); //w adresie 0.0 wyswietlacza wyswietla ponizszy komunikat
