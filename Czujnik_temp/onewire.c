@@ -36,15 +36,15 @@ char ow_read_bit(void)	//odczyt 1 bitu
 	
   }
   
- unsigned char ow_read_byte(void) //podczyt ca³ego bajtu - 8bitów
+ unsigned char ow_read_bajt(void) //podczyt ca³ego bajtu - 8bitów
  {
 	unsigned char i;
-	unsigned char bajt=0;
+	unsigned char byte=0;
 	
 	for(i=0;i<8;i++)  
 	{
 		if(ow_read_bit())  
-		bajt=1<<i; // przepisuje wartosci 1 do kolejnych miejsc w bicie
+		byte=1<<i; // przepisuje wartosci 1 do kolejnych miejsc w bicie
 		_delay_us(30);
 	}
 	return(value);
@@ -64,16 +64,34 @@ char ow_read_bit(void)	//odczyt 1 bitu
 	sei(); // zgoda na przerwania
  }
  
- void ow_write_byte(unsigned char bajt) //wyslanie bajtu
+ void ow_write_bajt(unsigned char byte) //wyslanie bajtu
  {
 	unsigned char i;
 	unsigned char temp;
 	for(i=0;i<8;i++)
 	{
-		temp = bajt>>i; //przypisanie do pom o bit zmiennej bajt przesuniety o i miejsc  (zeby byl najmlodszy bit)
+		temp = byte>>i; //przypisanie do pom o bit zmiennej bajt przesuniety o i miejsc  (zeby byl najmlodszy bit)
 		temp &= 0x01; // pozostawienie najmlodszego bitu
 		ow_write_bit(temp); //wyslanie kolejnych bitów 
 	}
 
 	_delay_us(8);
  }	
+
+
+ void temperatura (void)
+ {
+	 unsigned char ulamek=0; 
+	 obecnosc=ow_reset; // sprawdzenie obecnosci wyswietlacza
+	 if(obecnosc==1) // gdy jest wykryty czujnik
+	 {
+			lcd_locate(0,0); //w adresie 0.0 wyswietlacza wyswietla ponizszy komunikat
+			lcd_str("Jest czujnik");
+	 }
+	 else //nie ma czujnika
+	 {
+			lcd_locate(0,0); //w adresie 0.0 wyswietlacza wyswietla ponizszy komunikat
+			lcd_str("Brak czujnika temperatury");
+	}
+ }
+ }
