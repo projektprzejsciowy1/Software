@@ -3,8 +3,9 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
-#include <avr/signal.h>
-#include <lcd.h>
+#include <stdlib.h>
+#include <avr/interrupt.h>
+
 #define DQ 	PB0
 #define OWPORT PORTB
 #define OWDDR DDRB
@@ -13,9 +14,15 @@
 
 char blad;
 unsigned char obecnosc;
-int temperatura;
-unsigned char tempH;
-unsigned char tempH1;
-unsigned char tempL;
 
+unsigned int temperatura(void);
+
+unsigned char tempH;
+unsigned char tempL;
+unsigned char temp;
+ int temperatura=0;
+ int pow=128;
+
+char buf[8]; //konwersja temperatury
+int temperatura
 #endif
