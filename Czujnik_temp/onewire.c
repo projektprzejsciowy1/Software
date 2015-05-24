@@ -97,8 +97,12 @@ char ow_read_bit(void)	//odczyt 1 bitu
 	 ow_write_bajt(0xCC); //pomijamy ROM
 	 ow_write_bajt(0xbe); //odczyt temperatury
 	 tempL=ow_read_bajt(); // w naszym przypadku zawsze 0x00 
-	 tempH=ow_read_bajt();
 	 
+	 for(i=0;i<8;i++)
+	{if(ow_read_bit())  
+		buf[i]==1<<i; // przepisuje wartosci 1 do kolejnych miejsc w bicie
+		_delay_us(30);
+	 }
 	
 	  for (int i=0;i<7; i++) //przelicza binarny na dziesietny
    {pow/=2;
