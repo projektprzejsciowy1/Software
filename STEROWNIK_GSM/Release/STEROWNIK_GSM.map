@@ -21,10 +21,13 @@ Common symbol       size              file
 rx_tail             0x1               ./main.o
 block               0x5               ./dht11.o
 batt                0x1               ./main.o
-sms                 0x1a              ./main.o
+crit_flag           0x1               ./main.o
+sms                 0x20              ./main.o
 tx_head             0x1               ./main.o
+crc                 0x1               ./dht11.o
 phase               0x1               ./main.o
 ster                0x1               ./main.o
+move                0x1               ./main.o
 tx_tail             0x1               ./main.o
 signal              0x1               ./main.o
 time                0x1               ./main.o
@@ -151,7 +154,7 @@ LOAD f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000     0x1980
+.text           0x00000000     0x1ba4
  *(.vectors)
  .vectors       0x00000000       0x54 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
                 0x00000000                __vectors
@@ -159,41 +162,41 @@ LOAD f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a
  *(.vectors)
  *(.progmem.gcc*)
  *(.progmem*)
- .progmem.data  0x00000054      0x128 ./main.o
-                0x0000017c                . = ALIGN (0x2)
-                0x0000017c                __trampolines_start = .
+ .progmem.data  0x00000054      0x14a ./main.o
+                0x0000019e                . = ALIGN (0x2)
+                0x0000019e                __trampolines_start = .
  *(.trampolines)
- .trampolines   0x0000017c        0x0 linker stubs
+ .trampolines   0x0000019e        0x0 linker stubs
  *(.trampolines*)
-                0x0000017c                __trampolines_end = .
+                0x0000019e                __trampolines_end = .
  *(.jumptables)
  *(.jumptables*)
  *(.lowtext)
  *(.lowtext*)
-                0x0000017c                __ctors_start = .
+                0x0000019e                __ctors_start = .
  *(.ctors)
-                0x0000017c                __ctors_end = .
-                0x0000017c                __dtors_start = .
+                0x0000019e                __ctors_end = .
+                0x0000019e                __dtors_start = .
  *(.dtors)
-                0x0000017c                __dtors_end = .
+                0x0000019e                __dtors_end = .
  SORT(*)(.ctors)
  SORT(*)(.dtors)
  *(.init0)
- .init0         0x0000017c        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
-                0x0000017c                __init
+ .init0         0x0000019e        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
+                0x0000019e                __init
  *(.init0)
  *(.init1)
  *(.init1)
  *(.init2)
- .init2         0x0000017c        0xc f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
+ .init2         0x0000019e        0xc f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
  *(.init2)
  *(.init3)
  *(.init3)
  *(.init4)
- .init4         0x00000188       0x16 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
-                0x00000188                __do_copy_data
- .init4         0x0000019e       0x10 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
-                0x0000019e                __do_clear_bss
+ .init4         0x000001aa       0x16 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
+                0x000001aa                __do_copy_data
+ .init4         0x000001c0       0x10 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
+                0x000001c0                __do_clear_bss
  *(.init4)
  *(.init5)
  *(.init5)
@@ -204,80 +207,80 @@ LOAD f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a
  *(.init8)
  *(.init8)
  *(.init9)
- .init9         0x000001ae        0x8 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
+ .init9         0x000001d0        0x8 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
  *(.init9)
  *(.text)
- .text          0x000001b6        0x4 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
-                0x000001b6                __vector_1
-                0x000001b6                __vector_12
-                0x000001b6                __bad_interrupt
-                0x000001b6                __vector_6
-                0x000001b6                __vector_3
-                0x000001b6                __vector_11
-                0x000001b6                __vector_17
-                0x000001b6                __vector_19
-                0x000001b6                __vector_7
-                0x000001b6                __vector_5
-                0x000001b6                __vector_4
-                0x000001b6                __vector_9
-                0x000001b6                __vector_2
-                0x000001b6                __vector_15
-                0x000001b6                __vector_8
-                0x000001b6                __vector_16
-                0x000001b6                __vector_18
-                0x000001b6                __vector_20
- .text          0x000001ba       0x32 ./dht11.o
-                0x000001ba                dht_read
- .text          0x000001ec      0x1da ./lcd44780.o
-                0x000002da                lcd_cls
-                0x00000216                _lcd_write_byte
-                0x000002ba                lcd_locate
-                0x00000254                lcd_char
-                0x00000266                lcd_str
-                0x00000244                lcd_write_cmd
-                0x0000028a                lcd_defchar
-                0x000002ea                lcd_init
-                0x0000038e                lcd_int
-                0x0000024c                lcd_write_data
-                0x00000356                lcd_hex
- .text          0x000003c6     0x1514 ./main.o
-                0x000012d4                get_sms
-                0x000003c6                send_sms
-                0x000007b0                read_date
-                0x00000764                __vector_13
-                0x000006a0                str_cmp
-                0x00001404                main
-                0x00000aa8                sms_analyze
-                0x0000062a                send_cmd
-                0x00000718                __vector_14
-                0x0000099a                __vector_10
- .text          0x000018da        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodqi4.o)
- .text          0x000018da        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
- .text          0x000018da        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
- .text          0x000018da        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
- .text          0x000018da        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(itoa.o)
- .text          0x000018da        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(strrev.o)
- .text          0x000018da        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodhi4.o)
-                0x000018da                . = ALIGN (0x2)
+ .text          0x000001d8        0x4 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
+                0x000001d8                __vector_1
+                0x000001d8                __vector_12
+                0x000001d8                __bad_interrupt
+                0x000001d8                __vector_6
+                0x000001d8                __vector_3
+                0x000001d8                __vector_11
+                0x000001d8                __vector_17
+                0x000001d8                __vector_19
+                0x000001d8                __vector_7
+                0x000001d8                __vector_5
+                0x000001d8                __vector_4
+                0x000001d8                __vector_9
+                0x000001d8                __vector_2
+                0x000001d8                __vector_15
+                0x000001d8                __vector_8
+                0x000001d8                __vector_16
+                0x000001d8                __vector_18
+                0x000001d8                __vector_20
+ .text          0x000001dc       0xfa ./dht11.o
+                0x000001dc                dht_read
+ .text          0x000002d6      0x1da ./lcd44780.o
+                0x000003c4                lcd_cls
+                0x00000300                _lcd_write_byte
+                0x000003a4                lcd_locate
+                0x0000033e                lcd_char
+                0x00000350                lcd_str
+                0x0000032e                lcd_write_cmd
+                0x00000374                lcd_defchar
+                0x000003d4                lcd_init
+                0x00000478                lcd_int
+                0x00000336                lcd_write_data
+                0x00000440                lcd_hex
+ .text          0x000004b0     0x164e ./main.o
+                0x00000f30                get_sms
+                0x000004b0                send_sms
+                0x000011e6                read_date
+                0x0000119a                __vector_13
+                0x000010d6                str_cmp
+                0x000014e8                main
+                0x000006e8                sms_analyze
+                0x00001060                send_cmd
+                0x0000114e                __vector_14
+                0x000013d0                __vector_10
+ .text          0x00001afe        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodqi4.o)
+ .text          0x00001afe        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
+ .text          0x00001afe        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
+ .text          0x00001afe        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
+ .text          0x00001afe        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(itoa.o)
+ .text          0x00001afe        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(strrev.o)
+ .text          0x00001afe        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodhi4.o)
+                0x00001afe                . = ALIGN (0x2)
  *(.text.*)
- .text.libgcc   0x000018da       0x18 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodqi4.o)
-                0x000018da                __udivmodqi4
- .text.libgcc   0x000018f2        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
- .text.libgcc   0x000018f2        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
- .text.libgcc   0x000018f2        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
+ .text.libgcc   0x00001afe       0x18 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodqi4.o)
+                0x00001afe                __udivmodqi4
+ .text.libgcc   0x00001b16        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
+ .text.libgcc   0x00001b16        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
+ .text.libgcc   0x00001b16        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
  .text.avr-libc
-                0x000018f2       0x42 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(itoa.o)
-                0x000018f2                itoa
+                0x00001b16       0x42 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(itoa.o)
+                0x00001b16                itoa
  .text.avr-libc
-                0x00001934       0x20 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(strrev.o)
-                0x00001934                strrev
- .text.libgcc   0x00001954       0x28 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodhi4.o)
-                0x00001954                __udivmodhi4
-                0x0000197c                . = ALIGN (0x2)
+                0x00001b58       0x20 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(strrev.o)
+                0x00001b58                strrev
+ .text.libgcc   0x00001b78       0x28 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodhi4.o)
+                0x00001b78                __udivmodhi4
+                0x00001ba0                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000197c        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
-                0x0000197c                exit
-                0x0000197c                _exit
+ .fini9         0x00001ba0        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
+                0x00001ba0                exit
+                0x00001ba0                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -296,88 +299,90 @@ LOAD f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000197c        0x4 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
+ .fini0         0x00001ba0        0x4 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x00001980                _etext = .
+                0x00001ba4                _etext = .
 
-.data           0x00800060       0x50 load address 0x00001980
+.data           0x00800060       0x5c load address 0x00001ba4
                 0x00800060                PROVIDE (__data_start, .)
  *(.data)
  .data          0x00800060        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
  .data          0x00800060        0x0 ./dht11.o
  .data          0x00800060        0x0 ./lcd44780.o
- .data          0x00800060       0x4f ./main.o
-                0x008000ab                hum
-                0x008000aa                temp
-                0x008000ad                max_hum
-                0x008000ac                max_temp
-                0x008000ae                max_gas
- .data          0x008000af        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodqi4.o)
- .data          0x008000af        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
- .data          0x008000af        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
- .data          0x008000af        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
- .data          0x008000af        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(itoa.o)
- .data          0x008000af        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(strrev.o)
- .data          0x008000af        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodhi4.o)
+ .data          0x00800060       0x5c ./main.o
+                0x008000b8                hum
+                0x008000b7                temp
+                0x008000ba                max_hum
+                0x008000b9                max_temp
+                0x008000bb                max_gas
+ .data          0x008000bc        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodqi4.o)
+ .data          0x008000bc        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
+ .data          0x008000bc        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
+ .data          0x008000bc        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
+ .data          0x008000bc        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(itoa.o)
+ .data          0x008000bc        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(strrev.o)
+ .data          0x008000bc        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodhi4.o)
  *(.data*)
  *(.rodata)
  *(.rodata*)
  *(.gnu.linkonce.d*)
-                0x008000b0                . = ALIGN (0x2)
- *fill*         0x008000af        0x1 00
-                0x008000b0                _edata = .
-                0x008000b0                PROVIDE (__data_end, .)
+                0x008000bc                . = ALIGN (0x2)
+                0x008000bc                _edata = .
+                0x008000bc                PROVIDE (__data_end, .)
 
-.bss            0x008000b0      0x2da
-                0x008000b0                PROVIDE (__bss_start, .)
+.bss            0x008000bc      0x2e3
+                0x008000bc                PROVIDE (__bss_start, .)
  *(.bss)
- .bss           0x008000b0        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
- .bss           0x008000b0        0x0 ./dht11.o
- .bss           0x008000b0        0x0 ./lcd44780.o
- .bss           0x008000b0        0x1 ./main.o
-                0x008000b0                gas
- .bss           0x008000b1        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodqi4.o)
- .bss           0x008000b1        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
- .bss           0x008000b1        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
- .bss           0x008000b1        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
- .bss           0x008000b1        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(itoa.o)
- .bss           0x008000b1        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(strrev.o)
- .bss           0x008000b1        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodhi4.o)
+ .bss           0x008000bc        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32.o
+ .bss           0x008000bc        0x0 ./dht11.o
+ .bss           0x008000bc        0x0 ./lcd44780.o
+ .bss           0x008000bc        0x1 ./main.o
+                0x008000bc                gas
+ .bss           0x008000bd        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodqi4.o)
+ .bss           0x008000bd        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_exit.o)
+ .bss           0x008000bd        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_copy_data.o)
+ .bss           0x008000bd        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_clear_bss.o)
+ .bss           0x008000bd        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(itoa.o)
+ .bss           0x008000bd        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5\libc.a(strrev.o)
+ .bss           0x008000bd        0x0 f:/programy/winavr/bin/../lib/gcc/avr/4.3.3/avr5\libgcc.a(_udivmodhi4.o)
  *(.bss*)
  *(COMMON)
- COMMON         0x008000b1        0x5 ./dht11.o
-                0x008000b1                block
- COMMON         0x008000b6      0x2d4 ./main.o
-                0x008000b6                rx_tail
-                0x008000b7                batt
-                0x008000b8                sms
-                0x008000d2                tx_head
-                0x008000d3                phase
-                0x008000d4                ster
-                0x008000d5                tx_tail
-                0x008000d6                signal
-                0x008000d7                time
-                0x008000d8                users
-                0x00800114                errors
-                0x00800115                ans
-                0x00800147                UART_TxBuf
-                0x00800247                date
-                0x0080024d                pom
-                0x0080024e                rx_head
-                0x0080024f                disp
-                0x00800263                cmd
-                0x00800289                UART_RxBuf
-                0x00800389                licz
-                0x0080038a                PROVIDE (__bss_end, .)
-                0x00001980                __data_load_start = LOADADDR (.data)
-                0x000019d0                __data_load_end = (__data_load_start + SIZEOF (.data))
+ COMMON         0x008000bd        0x6 ./dht11.o
+                0x008000bd                block
+                0x008000c2                crc
+ COMMON         0x008000c3      0x2dc ./main.o
+                0x008000c3                rx_tail
+                0x008000c4                batt
+                0x008000c5                crit_flag
+                0x008000c6                sms
+                0x008000e6                tx_head
+                0x008000e7                phase
+                0x008000e8                ster
+                0x008000e9                move
+                0x008000ea                tx_tail
+                0x008000eb                signal
+                0x008000ec                time
+                0x008000ed                users
+                0x00800129                errors
+                0x0080012a                ans
+                0x0080015c                UART_TxBuf
+                0x0080025c                date
+                0x00800262                pom
+                0x00800263                rx_head
+                0x00800264                disp
+                0x00800278                cmd
+                0x0080029e                UART_RxBuf
+                0x0080039e                licz
+                0x0080039f                PROVIDE (__bss_end, .)
+                0x00001ba4                __data_load_start = LOADADDR (.data)
+                0x00001c00                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x0080038a        0x0
-                0x0080038a                PROVIDE (__noinit_start, .)
+.noinit         0x0080039f        0x0
+                0x0080039f                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x0080038a                PROVIDE (__noinit_end, .)
-                0x0080038a                _end = .
-                0x0080038a                PROVIDE (__heap_start, .)
+                0x0080039f                PROVIDE (__noinit_end, .)
+                0x0080039f                _end = .
+                0x0080039f                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)

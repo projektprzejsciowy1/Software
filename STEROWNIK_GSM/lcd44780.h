@@ -30,7 +30,7 @@
 //----------------------------------------------------------------------------------------
 // rozdzielczoœæ wyœwietlacza LCD (wiersze/kolumny)
 #define LCD_Y 4		// iloœæ wierszy wyœwietlacza LCD
-#define LCD_X 20	// iloœæ kolumn wyœwietlacza LCD
+#define LCD_X 16	// iloœæ kolumn wyœwietlacza LCD
 
 // tu ustalamy za pomoc¹ zera lub jedynki czy sterujemy pinem RW
 //	0 - pin RW pod³¹czony na sta³e do GND

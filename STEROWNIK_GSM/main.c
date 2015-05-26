@@ -74,17 +74,20 @@
 #define SMS_MOV 	4										//powiadomienie o wykryciu ruchu
 #define SMS_OK		5										//powiadomienie o poprawnym wykonaniu komendy
 #define SMS_ERR		6										//powiadomienie o blednym bledzie
-#define SMS_TEMP	7
-#define SMS_HUM		8
-#define SMS_GAS		9
-#define SMS_MTEMP	10
-#define SMS_MHUM	11
-#define SMS_MGAS	12
+#define SMS_TEMP	7										//naglowek do sms zwrotnego wartosc temperatury
+#define SMS_HUM		8										//naglowek do sms zwrotnego wartosc wilgotnosci
+#define SMS_GAS		9										//naglowek do sms zwrotnego wartosc gazy latwopalne
+#define SMS_MTEMP	10										//naglowek do sms zwrotnego wartosc maksymalna temperatury
+#define SMS_MHUM	11										//naglowek do sms zwrotnego wartosc maksymalna wilgotnosci
+#define SMS_MGAS	12										//naglowek do sms zwrotnego wartosc maksymalna gazow latwopalnych
+#define SMS_TEMPAL	13										//tresc powiadomienia o przekroczeniu temperatury maksymalnej
+#define SMS_HUMAL	14										//tresc powiadomienia o przekroczeniu wilgotnosci maksymalnej
+#define SMS_GASAL	15										//tresc powiadomienia o przekroczeniu maksymalnego stezenia gazow latwopalnych
 
 /*** definicje napisow dla wyswietlacza ***/
 
-#define	CLK_POS_Y	1										//pozycja zegara na wyswietlaczu - wiersz
-#define	CLK_POS_X	0										//pozycja zegara na wyswietlaczu - kolumna
+#define	CLK_POS_Y	0										//pozycja zegara na wyswietlaczu - wiersz
+#define	CLK_POS_X	9										//pozycja zegara na wyswietlaczu - kolumna
 
 #define DATE_POS_Y 	0										//pozycja daty na wyswietlaczu - wiersz
 #define DATE_POS_X 	0										//pozycja daty na wyswietlaczu - kolumna
@@ -124,22 +127,24 @@ volatile uint8_t	licz;
 volatile uint8_t	time;									//licznik podstawy czasu
 volatile uint8_t    errors;									//zmienna obslugujaca bledy
 volatile uint8_t	ster;									//zmienna z flagami sterujacymi programem
+volatile uint8_t	phase;									//procentowa wartosc mocy
+volatile uint8_t	move;									//flaga ruchu
 
 uint8_t 			signal;									//moc sygnalu RF
 uint8_t				batt;									//procent naladowania baterii
 uint8_t				temp=25;								//aktualna temperatura
-uint8_t				hum=50;									//aktualna wilgotnosc
+uint8_t				hum=40;									//aktualna wilgotnosc
 uint8_t				gas=0;									//aktualny poziom gazow
 uint8_t				max_temp=35;							//maksymalna temperatura
-uint8_t				max_hum=50;								//aktualna wilgotnosc
+uint8_t				max_hum=60;								//aktualna wilgotnosc
 uint8_t				max_gas=50;								//maksymalny poziom gazow
-uint8_t				phase;									//procentowa wartosc mocy
+uint8_t				crit_flag;								//flaga wyslania komunikatu
 
 char 				ans[50];
 uint8_t 			users[5][12];							//numery telefonow uzytkownikow format +48xxxxxxxxx
 char* 				cmd[19];								//adresy do komend zapisanych w pamieci flash
 char*				disp[10];								//adresy do napisow w pamieci flash
-char* 				sms[13];								//adresy do powiadomien sms w pamieci flash
+char* 				sms[16];								//adresy do powiadomien sms w pamieci flash
 
 char				pom;
 
@@ -148,12 +153,12 @@ struct
 	uint8_t year,month,day,hour,min,sec;					//struktura zawieraj¹ca date i godzine
 }date;
 
-uint8_t str_cmp(char* str);
-void send_cmd(char* str);
-uint8_t send_sms(char* str, uint8_t mem, uint8_t dest);
-uint8_t read_date(void);
-uint8_t get_sms(void);
-uint8_t sms_analyze(uint8_t dest);
+uint8_t str_cmp(char* str);									//funkcja porownujaca odebrana odpowiedz modulu z wzorcem z pamieci programu
+void send_cmd(char* str);									//funkcja wysylajaca podana komende AT z pamieci programu
+uint8_t send_sms(char* str, uint8_t mem, uint8_t dest);		//funkcja wysylajaca sms o podanej tresci do jednego lub wszystkich uzytkownikow z pamieci ram lub flash
+uint8_t read_date(void);									//funkcja odczytujaca date i godzine z modulu GSM
+uint8_t get_sms(void);										//funkcja sprawdzajaca czy odebrano sms
+uint8_t sms_analyze(uint8_t dest);							//funkcja analizujaca tresc sms i wykonujaca odpowiednie zadania
 
 
 int main(void)
@@ -167,12 +172,15 @@ int main(void)
 	sms[SMS_MOV]	= PSTR("Movement/");					//powiadomienie o wykryciu ruchu
 	sms[SMS_OK]		= PSTR("OK/");							//powiadomienie o poprawnym wykonaniu komendy
 	sms[SMS_ERR]	= PSTR("ERR/");							//powiadomienie o bledzie
-	sms[SMS_TEMP]	= PSTR("TEMP: /");
-	sms[SMS_HUM]	= PSTR("HUM: /");
-	sms[SMS_GAS]	= PSTR("GAS: /");
-	sms[SMS_MTEMP]	= PSTR("MAX TEMP: /");
-	sms[SMS_MHUM]	= PSTR("MAX HUM: /");
-	sms[SMS_MGAS]	= PSTR("MAX GAS: /");
+	sms[SMS_TEMP]	= PSTR("TEMP: /");						//naglowek do sms zwrotnego wartosc temperatury
+	sms[SMS_HUM]	= PSTR("HUM: /");						//naglowek do sms zwrotnego wartosc wilgotnosci
+	sms[SMS_GAS]	= PSTR("GAS: /");						//naglowek do sms zwrotnego wartosc stezenia gazow latwopalnych
+	sms[SMS_MTEMP]	= PSTR("MAX TEMP: /");					//naglowek do sms zwrotnego wartosc maksymalna temperatury
+	sms[SMS_MHUM]	= PSTR("MAX HUM: /");					//naglowek do sms zwrotnego wartosc maksymalna wilgotnosci
+	sms[SMS_MGAS]	= PSTR("MAX GAS: /");					//naglowek do sms zwrotnego wartosc maksymalna stezenia gazow latwopalnych
+	sms[SMS_TEMPAL]	= PSTR("TEMP ALARM/");					//tresc powiadomienia o przekroczeniu temperatury maksymalnej
+	sms[SMS_HUMAL]	= PSTR("HUM ALARM/");					//tresc powiadomienia o przekroczeniu wilgotnosci minimalnej
+	sms[SMS_GASAL]	= PSTR("GAS ALARM/");					//tresc powiadomienia o przekroczeniu maksymalnego stezenia gazow
 
 	/*** komendy AT i odpowiedzi SIM900D ***/
 
@@ -195,8 +203,8 @@ int main(void)
 	cmd[CMGF1_C] = PSTR("AT+CMGF=1 ");						//ustawienie trybu tekstowego sms
 	cmd[CMGS_C]	 = PSTR("AT+CMGS=\"");						//wyslanie sms bez zapisu w pamieci sim "+48nr"
 	cmd[CMT_A]	 = PSTR("+CMT: \"");							//odebranie sms
-	/*** domyslny uzytkownik ***/
 
+	/*** domyslny uzytkownik ***/
 	/*users[0][0]='+';
 	users[0][1]='4';
 	users[0][2]='8';
@@ -210,7 +218,7 @@ int main(void)
 	users[0][10]='2';
 	users[0][11]='8';*/
 
-	users[1][0]='+';
+	users[1][0]='+';										//wpisanie domyslnego numeru uzytkownika
 	users[1][1]='4';
 	users[1][2]='8';
 	users[1][3]='7';
@@ -248,11 +256,13 @@ int main(void)
 
 
 	/*** inicjalizacja SPI ***/
-
+	DDRD|=(1<<WR);											//pin sterujacy zapisem jako wyjscie
 	DDRB |= (1<<MOSI)|(1<<SCK);								//MOSI,SCK jako wyjscia
-	SPCR |= (1<<SPE)|(1<<MSTR)/*|(1<<SPR1)*/;				//tryb master, predkosc fosc/64
+	SPCR |= (1<<SPE)|(1<<MSTR)|(1<<SPR1)|(1<<SPR0);				//tryb master, predkosc fosc/64
 	SPI_SEND=0;												//wyslanie zer na wyjscia
-
+	_delay_ms(2);
+	PORTD|=1<<WR;											//przepisanie na wyjscia
+	PORTD&=~(1<<WR);
 	/*** inicjalizacja TIMER 1 ***/
 
 	/*** inicjalizacja TIMER 0- podstawa czasu 20ms***/
@@ -272,44 +282,44 @@ int main(void)
 
 	/*** wlaczenie modulu ***/
 
-	PORTB |= 1<<PWRK;									//sekwencja zalaczenia modulu
+	PORTB |= 1<<PWRK;										//sekwencja zalaczenia modulu
 	_delay_ms(800);
 	PORTB &= ~(1<<PWRK);
-	_delay_ms(200);										//oczekiwanie na uruchomienie uart
+	_delay_ms(200);											//oczekiwanie na uruchomienie uart
 	sei();
-	//while(!str_cmp(cmd[CHGM_A]));						//oczekiwanie na CHARGE MODE	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//while(!str_cmp(cmd[CHGM_A]));							//oczekiwanie na CHARGE MODE
 	//while(!str_cmp(cmd[CHG2NM_A]));						//oczekiwanie na From CHARGE MODE to NORMAL
-	while(!str_cmp(cmd[RDY_A]));						//oczekiwanie na RDY
-	while(!str_cmp(cmd[CFUN1_A]));						//+CFUN: 1
-	while(!str_cmp(cmd[CPINR_A]));						//+CPIN: READY
-	while(!str_cmp(cmd[CALLR_A]));						//Call Ready
+	while(!str_cmp(cmd[RDY_A]));							//oczekiwanie na RDY
+	while(!str_cmp(cmd[CFUN1_A]));							//+CFUN: 1
+	while(!str_cmp(cmd[CPINR_A]));							//+CPIN: READY
+	while(!str_cmp(cmd[CALLR_A]));							//Call Ready
 	lcd_cls();
 	lcd_str("SIM900D: OK");
 
-	send_cmd(cmd[ATE0_C]);								//ATE0 - wylaczenie echa
-	rx_tail = (rx_tail-2) & UART_MASK;					//dodanie do odpowiedzi do echa konendy ATE0 /r/n
-	while(!str_cmp(cmd[ATE0_A]));						//odebranie echa komendy ATE0
+	send_cmd(cmd[ATE0_C]);									//ATE0 - wylaczenie echa
+	rx_tail = (rx_tail-2) & UART_MASK;						//dodanie do odpowiedzi do echa konendy ATE0 /r/n
+	while(!str_cmp(cmd[ATE0_A]));							//odebranie echa komendy ATE0
 	while(!str_cmp(cmd[OK_A]));
 	_delay_ms(500);
-	lcd_locate(1,0);									//drugi wiersz wyswietlacza
+	lcd_locate(1,0);										//drugi wiersz wyswietlacza
 	lcd_str("ECHO: OFF");
 	_delay_ms(500);
 
-	send_cmd(cmd[CREG_C]);								//CREG - pytanie o status logowania do sieci
-	while(!str_cmp(cmd[CREG_A]));						//odebranie odpowiedzi jesli zalogowany
-	while(!str_cmp(cmd[OK_A]));							//odebranie potwierdzenia komendy "OK"
-	lcd_cls();
+	send_cmd(cmd[CREG_C]);									//CREG - pytanie o status logowania do sieci
+	while(!str_cmp(cmd[CREG_A]));							//odebranie odpowiedzi jesli zalogowany
+	while(!str_cmp(cmd[OK_A]));								//odebranie potwierdzenia komendy "OK"
+	lcd_locate(2,0);
 	lcd_str("LOG: OK ");
 	_delay_ms(380);
 
-	send_cmd(cmd[CMGF1_C]);								//wlaczenie trybu tekstowego sms
-	while(!str_cmp(cmd[OK_A]));							//oczekiwanie na potwierdzenie
+	send_cmd(cmd[CMGF1_C]);									//wlaczenie trybu tekstowego sms
+	while(!str_cmp(cmd[OK_A]));								//oczekiwanie na potwierdzenie
 
-	send_cmd(cmd[CSQ_C]);								//wyslanie zapytania o moc sygnalu
-	_delay_ms(200);										//oczekiwanie na odpowiedz modulu
-	lcd_locate(1,0);
+	send_cmd(cmd[CSQ_C]);									//wyslanie zapytania o moc sygnalu
+	_delay_ms(200);											//oczekiwanie na odpowiedz modulu
+	lcd_locate(3,0);
 	if(UART_RxBuf[(rx_tail+17) & UART_MASK]=='O' &&
-		UART_RxBuf[(rx_tail+18) & UART_MASK]=='K' 	)	//jesli odpowiedz OK
+		UART_RxBuf[(rx_tail+18) & UART_MASK]=='K' 	)		//jesli odpowiedz OK
 	{
 		signal=(UART_RxBuf[(rx_tail+9) & UART_MASK]-48)*10;	//cyfra dziesiatek
 		signal+=(UART_RxBuf[(rx_tail+10) & UART_MASK]-48);	//cyfra jednosci
@@ -319,7 +329,7 @@ int main(void)
 		lcd_str("  ");
 	}
 
-	send_cmd(cmd[CBC_C]);								//wyslanie zapytania o stan baterii
+	send_cmd(cmd[CBC_C]);									//wyslanie zapytania o stan baterii
 	_delay_ms(200);
 
 	if(UART_RxBuf[(rx_tail+22) & UART_MASK]=='O' &&
@@ -336,14 +346,54 @@ int main(void)
 	}
 	lcd_cls();
 	read_date();
-	//TIMSK|=(1<<OCIE0);										//uruchomienie zegara
+	TIMSK|=(1<<OCIE0);										//uruchomienie przerwania podstawy czasu
 
-	//while(!send_sms(sms[SMS_RST],0));							//wyslij sms o stracie sterownika z pamieci programu
+	while(!send_sms(sms[SMS_RST],0,255));					//wyslij sms o stracie sterownika z pamieci programu
 
 	while(1)												//petla glowna programu
 	{
 		pom=get_sms();
-		//if(pom) PORTB|=1<<PB1;
+		//if(pom==0) rx_tail=rx_head;						//jesli nie odebrano sms wyczysc bufor
+
+		if(temp>max_temp && !(crit_flag))					//jesli przekroczono ktoras z wartosci krytycznych zalacz alarm
+		{
+			PORTC|=1<<BUZZ;
+			send_sms(sms[SMS_TEMPAL],0,255);
+			crit_flag=1;
+		}
+		else if(hum>max_hum && !(crit_flag))
+		{
+			PORTC|=1<<BUZZ;
+			send_sms(sms[SMS_HUMAL],0,255);
+			crit_flag=1;
+		}
+		if(gas>max_gas && !(crit_flag))
+		{
+			PORTC|=1<<BUZZ;
+			send_sms(sms[SMS_GASAL],0,255);
+			crit_flag=1;
+		}
+		else if(crit_flag==1)
+		{
+			PORTC&=~(1<<BUZZ);
+			crit_flag=2;
+		}
+		crit_flag++;
+		if(crit_flag==120) crit_flag=0;
+
+		if(dht_read())
+		{
+			hum=block[0];
+			temp=block[2];
+			lcd_locate(3,0);
+			lcd_str("TEMP: ");
+			lcd_int(temp);
+			lcd_char(' ');
+			lcd_str("HUM: ");
+			lcd_int(hum);
+			lcd_char(' ');
+
+		}
 		_delay_ms(500);
 
 
@@ -351,10 +401,10 @@ int main(void)
 
 }
 
-uint8_t get_sms(void) /***OK***/
+uint8_t get_sms(void)
 {
 	uint8_t pom=1,pom1=1, dest=255;
-	if(rx_head == rx_tail) return 0;
+	if(rx_head == rx_tail) return 0;															//jesli bufor odbiorczy pusty zwroc zero
 	_delay_ms(70);
 
 	for(int i=0; i<7; i++)
@@ -369,7 +419,7 @@ uint8_t get_sms(void) /***OK***/
 		if(users[i][0] == '+')
 		{	for(int j=0; j<12;j++)
 			{
-				if(UART_RxBuf[((rx_tail+j) & UART_MASK)]!=users[i][j]) {pom=0; break;}					//sprawdzenie zgodny numer
+				if(UART_RxBuf[((rx_tail+j) & UART_MASK)]!=users[i][j]) {pom=0; break;}			//sprawdzenie czy numer zgodny z numerem z listy
 				if(j==11)
 				{
 					rx_tail=(rx_tail+j+3) & UART_MASK;											//jesli tak to skasuj numer
@@ -386,27 +436,24 @@ uint8_t get_sms(void) /***OK***/
 
 			if(UART_RxBuf[((rx_tail+pom1) & UART_MASK)] == '"')
 			{
-				rx_tail=(rx_tail+pom1+25) & UART_MASK;													//skasowanie nazwy uzytkownika i daty otrzymania sms
+				rx_tail=(rx_tail+pom1+25) & UART_MASK;											//skasowanie nazwy uzytkownika i daty otrzymania sms
 				pom=0;
 			}
 			else pom1++;
 		}
 
 /*** dzialania w zaleznosci od tresci ***/
-
-			return sms_analyze(dest);
-
-
+		return sms_analyze(dest);
 
 }
 
 uint8_t sms_analyze(uint8_t dest)
 {/*** analiza tresci sms***/
-	uint8_t pom=1,pom2=100,nr=0,outputs=0,m=0,set=0,get=0,crit=0,phase1=0;
+	uint8_t pom=1,nr=0,outputs=0,m=0,set=0,get=0,crit=0,phase1=0;								//zmienne pomocnicze i flagi
 
 
 	/*** jesli nadano SET ***/
-	if(UART_RxBuf[(rx_tail+1) & UART_MASK] == pgm_read_byte(sms[SMS_SET]))/**** czasami zostawia ukosniki w wysylanej tablicy,***/
+	if(UART_RxBuf[(rx_tail+1) & UART_MASK] == pgm_read_byte(sms[SMS_SET]))
 	{
 		_delay_ms(50);
 		rx_tail=(rx_tail+1) & UART_MASK;
@@ -415,7 +462,7 @@ uint8_t sms_analyze(uint8_t dest)
 			if(UART_RxBuf[((rx_tail+i) & UART_MASK)] != pgm_read_byte(sms[SMS_SET]+i)) {pom=0; break;}
 			if(i == 4) rx_tail=(rx_tail+i) & UART_MASK;													//skasowanie naglowka
 		}
-		while(pom)
+		while(pom)																						//ustawienie wyjsc zgodnie z trescia sms
 		{
 			if(UART_RxBuf[((rx_tail+pom) & UART_MASK)] == 'T')
 			{
@@ -440,8 +487,8 @@ uint8_t sms_analyze(uint8_t dest)
 									else
 									{
 										rx_tail=(rx_tail+pom+2) & UART_MASK;									//skasowanie tresci
-										pom=0;
 									}
+									pom=0;
 								}
 							else pom++;
 						}
@@ -454,15 +501,16 @@ uint8_t sms_analyze(uint8_t dest)
 						{
 
 							pom++;
-							while(UART_RxBuf[((rx_tail+pom) & UART_MASK)] != '%')
+							if(UART_RxBuf[((rx_tail+pom+2) & UART_MASK)]=='%')
 							{
-
-								phase1+=(UART_RxBuf[((rx_tail+pom) & UART_MASK)]-'0')*pom2;				//przemyslec obliczenia
-								pom2=pom2/10;
+								phase1+=(UART_RxBuf[((rx_tail+pom) & UART_MASK)]-'0')*10;
 								pom++;
+								phase1+= UART_RxBuf[((rx_tail+pom) & UART_MASK)]-'0';
+								pom++;
+								phase=phase1;
+
 							}
 
-							phase=phase1;
 							pom++;
 							if(UART_RxBuf[((rx_tail+pom) & UART_MASK)] == ';')
 							{
@@ -471,9 +519,8 @@ uint8_t sms_analyze(uint8_t dest)
 								else
 								{
 									rx_tail=(rx_tail+pom+2) & UART_MASK;									//skasowanie tresci
-									pom=0;
-
 								}
+								pom=0;
 							}
 							else pom++;
 						}
@@ -489,22 +536,29 @@ uint8_t sms_analyze(uint8_t dest)
 				if(UART_RxBuf[((rx_tail+pom) & UART_MASK)] == 'E')
 				{
 					pom++;
-					nr=UART_RxBuf[((rx_tail+pom) & UART_MASK)]-'1';										//pobranie numeru bitu w bajcie ustawien
+					nr=UART_RxBuf[((rx_tail+pom) & UART_MASK)]-'1';									//pobranie numeru bitu w bajcie ustawien
 					if(nr<4)
 					{
+						nr+=4;
 						pom++;
 						if(UART_RxBuf[((rx_tail+pom) & UART_MASK)] == '=')
 						{
 							pom++;
+							if(UART_RxBuf[((rx_tail+pom) & UART_MASK)] == '1') outputs|=1<<nr;
+							else if(UART_RxBuf[((rx_tail+pom) & UART_MASK)] == '0')  outputs&=~(1<<nr);
+							pom++;
+
 							if(UART_RxBuf[((rx_tail+pom) & UART_MASK)] == ';')
 							{
 								if(UART_RxBuf[((rx_tail+pom) & UART_MASK)] == ' ')
+								{
 									rx_tail=(rx_tail+pom+3) & UART_MASK;
+								}
 								else
 								{
 									rx_tail=(rx_tail+pom+2) & UART_MASK;									//skasowanie tresci
-									pom=0;
 								}
+								pom=0;
 							}
 							else pom++;
 						}
@@ -512,33 +566,27 @@ uint8_t sms_analyze(uint8_t dest)
 				}
 			}
 		}
-				lcd_cls();
-				lcd_int(outputs);
-				lcd_char(' ');
-				lcd_int(phase);
-				lcd_char(' ');
-				lcd_int(rx_tail);
-				lcd_char(' ');
-				lcd_int(rx_head);
-				_delay_ms(1000);
-		SPI_SEND=outputs; 																				//zapisanie wyjsc'
-		rx_tail=rx_head;																				//roznica indeksow o 1 ??
+
+		SPI_SEND=outputs; 																				//zapisanie wyjsc do rejestru
+		_delay_ms(2);
+		PORTD|=1<<WR;																					//przepisanie na wyjscia
+		PORTD&=~(1<<WR);
+
+		rx_tail=rx_head;																				//oproznienie bufora
 		for(int i=0;;i++)
 		{
 			m=i;
 			if(pgm_read_byte(sms[SMS_OK]+i) =='/') break;
 			ans[i]= pgm_read_byte(sms[SMS_OK]+i);														//wpisanie potwierdzenia wykonania komendy
-
 		}
-		set=1;
+		set=1;																							//ustawiene flagi pomyslnej analizy kmendy set
 	}
-
 
 
 	/*** jesli odebrano get ***/
 	if(UART_RxBuf[((rx_tail+1) & UART_MASK)] == pgm_read_byte(sms[SMS_GET]))
 	{
-
+		_delay_ms(50);
 		pom=1;
 		rx_tail=(rx_tail+1) & UART_MASK;
 		for(int i=1; i<4; i++)
@@ -548,7 +596,6 @@ uint8_t sms_analyze(uint8_t dest)
 			if(UART_RxBuf[(rx_tail+1) & UART_MASK] ==' ' ) rx_tail=(rx_tail+1) & UART_MASK;			//jesli dodatkowa spacja
 			if(UART_RxBuf[(rx_tail+1) & UART_MASK] ==0x0D) rx_tail=(rx_tail+2) & UART_MASK;			//jesli znak konca wiadomosci
 		}
-
 
 		if(pom)
 		{
@@ -569,7 +616,7 @@ uint8_t sms_analyze(uint8_t dest)
 					m=i+m;
 					break;
 				}
-				ans[i+m]= pgm_read_byte(sms[SMS_TEMP]+i);												//wpisanie potwierdzenia wykonania komendy
+				ans[i+m]= pgm_read_byte(sms[SMS_TEMP]+i);											//wpisanie potwierdzenia wykonania komendy
 
 			}
 
@@ -591,7 +638,7 @@ uint8_t sms_analyze(uint8_t dest)
 					m=i+m;
 					break;
 				}
-				ans[i+m]= pgm_read_byte(sms[SMS_HUM]+i);												//wpisanie potwierdzenia wykonania komendy
+				ans[i+m]= pgm_read_byte(sms[SMS_HUM]+i);											//wpisanie potwierdzenia wykonania komendy
 
 			}
 			ans[m]=(hum/10)+'0';
@@ -610,7 +657,7 @@ uint8_t sms_analyze(uint8_t dest)
 					m=i+m;
 					break;
 				}
-				ans[i+m]= pgm_read_byte(sms[SMS_GAS]+i);												//wpisanie potwierdzenia wykonania komendy
+				ans[i+m]= pgm_read_byte(sms[SMS_GAS]+i);											//wpisanie potwierdzenia wykonania komendy
 
 			}
 
@@ -623,14 +670,17 @@ uint8_t sms_analyze(uint8_t dest)
 			ans[m]=';';
 			m++;
 
-			get=1;
+			get=1;																					//ustawiene flagi pomyslnej analizy kmendy get
+
 		}
 
 	}
 
+
 	/*** jesli odebrano CRI; ***/
 		if(UART_RxBuf[((rx_tail+1) & UART_MASK)] == pgm_read_byte(sms[SMS_CRI]))
 		{
+			_delay_ms(50);
 			pom=1;
 			rx_tail=(rx_tail+1) & UART_MASK;
 			for(int i=1; i<4; i++)
@@ -714,17 +764,15 @@ uint8_t sms_analyze(uint8_t dest)
 				ans[m]=';';
 				m++;
 
-				crit=1;
+				crit=1;																						//ustawiene flagi pomyslnej analizy kmendy set
 			}
 
 		}
 
-	if(set || get || crit)
+	if(set || get || crit)																					//jesli ktoras z flag ustawiona to wyslij odpowiedz
 	{
-
 		ans[m]='/';
-
-		if(send_sms(ans,1,dest))
+		send_sms(ans,1,dest);
 		return 1;
 	}
 
@@ -734,6 +782,7 @@ uint8_t sms_analyze(uint8_t dest)
 uint8_t read_date(void)
 {
 	/*** odczyt daty i godziny, wypisanie na wyswietlacz ***/
+
 		send_cmd(cmd[CCLK_Q]);								//wyslanie zapytania o date i godzine
 		_delay_ms(200);
 		if(UART_RxBuf[(rx_tail+36) & UART_MASK]=='O' &&
@@ -745,16 +794,16 @@ uint8_t read_date(void)
 			date.month=(UART_RxBuf[(rx_tail+15) & UART_MASK]-48);		//cyfra jednosci miesiaca
 			date.day =(UART_RxBuf[(rx_tail+17) & UART_MASK]-48)*10;		//cyfra dziesiatek dnia
 			date.day=(UART_RxBuf[(rx_tail+18) & UART_MASK]-48);			//cyfra jednosci dnia
-			date.hour=(UART_RxBuf[(rx_tail+20) & UART_MASK]-48)*10;		//cyfra jednosci godzin
+			date.hour=(UART_RxBuf[(rx_tail+20) & UART_MASK]-48)*10;		//cyfra dziesiatek godzin
 			date.hour=(UART_RxBuf[(rx_tail+21) & UART_MASK]-48);		//cyfra jednosci godzin
-			date.min=(UART_RxBuf[(rx_tail+23) & UART_MASK]-48)*10;		//cyfra jednosci minut
+			date.min=(UART_RxBuf[(rx_tail+23) & UART_MASK]-48)*10;		//cyfra dziesiatek minut
 			date.min=(UART_RxBuf[(rx_tail+24) & UART_MASK]-48);			//cyfra jednosci minut
-			date.sec=(UART_RxBuf[(rx_tail+26) & UART_MASK]-48)*10;		//cyfra jednosci sekund
+			date.sec=(UART_RxBuf[(rx_tail+26) & UART_MASK]-48)*10;		//cyfra dziesiatek sekund
 			date.sec=(UART_RxBuf[(rx_tail+27) & UART_MASK]-48);			//cyfra jednosci sekund
 
 
 			rx_tail = rx_head;								//wyczyszczenie bufora
-			lcd_locate(DATE_POS_Y,DATE_POS_X);;
+			lcd_locate(DATE_POS_Y,DATE_POS_X);				//wyswietlenie calosci daty
 			if(date.day<10) lcd_int(0);
 			lcd_int(date.day);
 			lcd_str("/");
@@ -776,10 +825,10 @@ uint8_t read_date(void)
 		return 1;
 }
 
-uint8_t send_sms(char* str, uint8_t mem, uint8_t dest)/***zmienic zeby nie rozsylal do wszystkich!!!!!!!! wysyla rozne dlugosci znakow GET krzaczy po wyslaniu do jednego odbiorcy do reszty wysyla czesc komunikatu***/
-{ /*** wyslanie sms do wszystkich uzytkownikow zdefiniowanych w konfiguracji ***/
+uint8_t send_sms(char* str, uint8_t mem, uint8_t dest)
+{ /*** wyslanie sms do uzytkownikow zdefiniowanych w konfiguracji ***/
 
-	uint8_t	spom = 0, k=0;													//zmienna pomocnicza
+	uint8_t	spom = 0, k=0;												//zmienne pomocnicze
 
 	if(dest<5) k=dest;													//jesli wybrano wiadomosc do jednego uzytkownika
 
@@ -808,8 +857,6 @@ uint8_t send_sms(char* str, uint8_t mem, uint8_t dest)/***zmienic zeby nie rozsy
 				UART_TxBuf[tx_head]=0x0A;								//znak \n
 				UART_SEND;												//wyslanie numeru
 
-				while(tx_tail!=tx_head);
-
 				while(1)
 				{
 					if(UART_RxBuf[(rx_tail+3) & UART_MASK]=='>' &&		//sprawdzenie czy mozna wyslac tresc wiadomosci
@@ -821,37 +868,37 @@ uint8_t send_sms(char* str, uint8_t mem, uint8_t dest)/***zmienic zeby nie rozsy
 
 				}
 
-				while(UART_TxBuf[((tx_head+1) & UART_MASK)] != '/')			//jesli kolejny element
+				for(;;)
 				{
-
 					tx_head = (tx_head+1) & UART_MASK;						//zwiekszenie indeksu bufora nadawczego
 					if(mem==0)												//jesli napis w pamieci programu
 					{
+						if(pgm_read_byte(str+spom)=='/') break;
 						UART_TxBuf[tx_head] = pgm_read_byte(str+spom);		//przepisanie komunikatu do bufora nadawczego
 					}
 					else if(mem == 1)										//jesli napis w pamieci ram
 					{
+						if(str[spom]=='/') break;
 						UART_TxBuf[tx_head] = str[spom];					//przepisanie komunikatu do bufora nadawczego
 					}
 					spom++;
 				}
-
 				spom=0;
-				tx_head = (tx_head+1) & UART_MASK;						//zwiekszenie indeksu bufora nadawczego
-				UART_TxBuf[tx_head] = 0x1A;								//znak konca wiadomosci
-				UART_SEND												//wyslanie komunikatu
+				tx_head = (tx_head+1) & UART_MASK;							//zwiekszenie indeksu bufora nadawczego
+				UART_TxBuf[tx_head] = 0x1A;									//znak konca wiadomosci
+				UART_SEND													//wyslanie komunikatu
 
-				while(!((UART_RxBuf[(rx_tail+15) & UART_MASK]=='O' &&	//w zaleznosci jaki nr sms w pamieci
+				while(!((UART_RxBuf[(rx_tail+15) & UART_MASK]=='O' &&		//w zaleznosci jaki nr sms w pamieci
 						UART_RxBuf[(rx_tail+16) & UART_MASK]=='K')||
 						(UART_RxBuf[(rx_tail+16) & UART_MASK]=='O' &&
 						UART_RxBuf[(rx_tail+17) & UART_MASK]=='K')||
 						(UART_RxBuf[(rx_tail+17) & UART_MASK]=='O' &&
 						UART_RxBuf[(rx_tail+18) & UART_MASK]=='K')));
 				_delay_ms(60);
-				rx_tail=rx_head;										//oproznienie bufora odbiorczego
+				rx_tail=rx_head;											//oproznienie bufora odbiorczego
 
 		}
-		if(dest<5) return 1;											// jesli wiadomosc tylko do jednego odbiorcy to konec funkcji
+		if(dest<5) return 1;												// jesli wiadomosc tylko do jednego odbiorcy to konec funkcji
 	}
 
 	return 1;
@@ -883,13 +930,13 @@ void send_cmd(char* str)
 uint8_t str_cmp(char* str)
 { /***porownanie dopowiedzi modulu z wzorcem***/
 
-	uint8_t	crx_head=rx_head;																		//kopie do pracy funkcji
+	uint8_t	crx_head=rx_head;																		//kopie indeksow do pracy funkcji
 	uint8_t tmp=0;
-	uint8_t	tmp_tail=(rx_tail+3) & UART_MASK;
+	uint8_t	tmp_tail=(rx_tail+3) & UART_MASK;														//pominiecie znakow /r /n
 
 
 		if(UART_RxBuf[((rx_tail+1) & UART_MASK)] == 0x0D && 										//jesli pierwsze znaki sa rowne /r/n porownaj tekst
-			UART_RxBuf[((rx_tail+2) & UART_MASK)] == 0x0A &&										//moze byc problem z +2
+			UART_RxBuf[((rx_tail+2) & UART_MASK)] == 0x0A &&
 			rx_tail != crx_head)
 		{
 
@@ -897,7 +944,7 @@ uint8_t str_cmp(char* str)
 			{
 				if(UART_RxBuf[tmp_tail] == 0x0D) 												//jesli dotarlismy do konca komendy/odpowiedzi zakoncz funkcje
 				{
-					rx_tail=(tmp_tail+1) & UART_MASK;										//wykasowanie odczytanej komendy
+					rx_tail=(tmp_tail+1) & UART_MASK;											//wykasowanie odczytanej komendy
 					return 1;
 				}
 				else if(UART_RxBuf[tmp_tail] != pgm_read_byte(str+tmp)) 						//jesli ktorys element jest rozny od wzorca zwroc blad
@@ -910,16 +957,13 @@ uint8_t str_cmp(char* str)
 			}while(tmp);
 		}
 
-		else
-		{
 			return 0;																			//bledna komenda
-		}
 
-		return 0;
 }
 
 ISR(TIMER0_COMP_vect)
 {
+
 	time++;
 	if(time == 50) 								//jesli minela sekunda to zwieksz zmienna sekund
 	{
@@ -936,7 +980,7 @@ ISR(TIMER0_COMP_vect)
 				if(date.hour == 24)
 				{
 					date.hour = 0;
-					read_date();
+					read_date();				// po polnocy synchronizuj zegar z zegarem modulu
 
 				}
 				lcd_locate(CLK_POS_Y,CLK_POS_X);
@@ -953,12 +997,10 @@ ISR(TIMER0_COMP_vect)
 		lcd_locate(CLK_POS_Y,CLK_POS_X+6);
 		if(date.sec<10) lcd_int(0);
 		lcd_int(date.sec);
-
-
-
-
-
 	}
+
+	if((PINC&(1<<PC2))) PORTC|=1<<BUZZ;						//jesli wykryto ruch zalacz buzzer
+	else PORTC &=~(1<<BUZZ);
 
 }
 
@@ -983,14 +1025,7 @@ ISR(USART_RXC_vect)											//przerwanie od odebrania znaku
 			licz++;
 			return;
 		}
-	//lcd_char(data);
 	tmp_head = (rx_head+1) & UART_MASK;						//obliczenie indeksu poczatku bufora
-	/*if (tmp_head == rx_tail) errors|=1<<RX_ERR;				//blad nadpisania bufora odbiorczego, ustaw flage bledu odbiornika
-	else
-	{*/
-		rx_head=tmp_head;									//zwiekszamy indeks poczatku bufora
-		UART_RxBuf[tmp_head]=data;							//przepisujemy odebrany znak do bufora odbiorczego
-	//}
-	//if(data == 0x0D) ster|=1<<CMD_RDY;						//jesli odebrano znak konca komendy ustaw flage sterujaca
-
+	rx_head=tmp_head;										//zwiekszamy indeks poczatku bufora
+	UART_RxBuf[tmp_head]=data;								//przepisujemy odebrany znak do bufora odbiorczego
 }
